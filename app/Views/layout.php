@@ -1,6 +1,13 @@
 <!DOCTYPE html>
 <html lang="en">
 
+<?php
+$hlm = "Home";
+if(uri_string()!=""){
+  $hlm = ucwords(uri_string());
+}
+?>
+    
 <head>
     <meta charset="utf-8">
     <meta content="width=device-width, initial-scale=1.0" name="viewport">
