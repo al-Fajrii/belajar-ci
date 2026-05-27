@@ -6,17 +6,17 @@ $username = [
     'name' => 'username',
     'id' => 'username',
     'class' => 'form-control',
-    'required' => 'required',
-    'minlength' => '6'
+    // 'required' => 'required',
+    // 'minlength' => '6'
 ];
 
 $password = [
     'name' => 'password',
     'id' => 'password',
     'class' => 'form-control',
-    'required' => 'required',
-    'minlength' => '6',
-    'inputmode' => 'numeric'
+    // 'required' => 'required',
+    // 'minlength' => '6',
+    // 'inputmode' => 'numeric'
 ];
 ?>
 
