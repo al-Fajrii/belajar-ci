@@ -12,10 +12,16 @@ class ProdukController extends BaseController
 
     function __construct()
     {
-        helper('form'); //tambahan helper form untuk menggunakan fungsi form_open, form_input, dll
         $this->productModel = new ProductModel();
     }
 
+    public function index()
+    {
+        helper('form'); //tambahan helper form untuk menggunakan fungsi form_open, form_input, dll
+        return view('produk/index', [
+            'products' => $this->productModel->findAll()
+        ]);
+    }
         public function create()
     {
         $dataFoto = $this->request->getFile('foto');
@@ -74,11 +80,4 @@ public function delete($id)
 
     return redirect('produk')->with('success', 'Data Berhasil Dihapus');
 }
-
-    public function index()
-    {
-        return view('produk/index', [
-            'products' => $this->productModel->findAll()
-        ]);
-    }
 }
