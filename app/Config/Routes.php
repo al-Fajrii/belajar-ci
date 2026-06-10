@@ -28,4 +28,9 @@ $routes->group('keranjang', ['filter' => 'auth'], function ($routes) {
     $routes->get('clear', 'TransaksiController::cart_clear');
 });
 
+$routes->get('checkout', 'TransaksiController::checkout', ['filter' => 'auth']);
 $routes->get('profile', 'ProfileController::index', ['filter' => 'auth']);  
+$routes->post('buy', 'TransaksiController::buy', ['filter' => 'auth']);
+
+$routes->get('ajax/destinations','TransaksiController::destinations', ['filter' => 'auth']);
+$routes->get('ajax/costs','TransaksiController::costs', ['filter' => 'auth']);
