@@ -2,4 +2,4 @@
 POST https://rajaongkir.komerce.id/api/v1/calculate/domestic-cost
 Content-Type: application/x-www-form-urlencoded
 Accept: application/json
-key: JcYvkZHj25b617df432025a7eKfmkqXt
+key: 8agKD8EM291598113d16d503jTVeTin1
