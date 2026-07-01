@@ -98,14 +98,20 @@ class TransaksiController extends BaseController
     
     public function checkout()
     {  
-        $service = new RajaOngkirService();
-        $response = $service->getDestination('semarang');
-        $response2 = $service->getCost('64999','65042','1000','jne');
+        helper('transaksi');
+
+        $cartItems = $this->cart->contents();
+        $subtotal  = $this->cart->total();
+
+        // Hitung komponen tambahan berdasarkan subtotal sebelum PPN & biaya admin
+        $ppn         = hitung_ppn($subtotal);
+        $biaya_admin = hitung_biaya_admin($subtotal);
+
         $data = [
-            'items' => $this->cart->contents(),
-            'total' => $this->cart->total(),
-            'response' => $response,
-            'response2' => $response2
+            'items'       => $cartItems,
+            'total'       => $subtotal,
+            'ppn'         => $ppn,
+            'biaya_admin' => $biaya_admin,
         ];
 
         return view('v_checkout', $data);
@@ -165,10 +171,11 @@ class TransaksiController extends BaseController
 
     public function buy()
     { 
+        helper('transaksi');
         $cartItems = $this->cart->contents();
 
         if (empty($cartItems)) {
-            return redirect()->back();
+            return redirect()->back();  
         }
 
         $db = \Config\Database::connect();
@@ -179,14 +186,26 @@ class TransaksiController extends BaseController
             $subtotal += $item['qty'] * $item['price'];
         }
 
-        $ongkir = (int) $this->request->getPost('ongkir');
+        $ongkir      = (int) $this->request->getPost('ongkir');
+        $kupon_code  = $this->request->getPost('kupon_code') ?? '';
+        $diskon_kupon = hitung_diskon_kupon($subtotal, $kupon_code);
+        $ppn         = hitung_ppn($subtotal);
+        $biaya_admin = hitung_biaya_admin($subtotal);
+
+        // Grand Total = subtotal - diskon_qty - diskon_kupon + ppn + biaya_admin + ongkir
+        $total_harga = $subtotal - $diskon_kupon + $ppn + $biaya_admin + $ongkir;
+        if ($total_harga < 0) $total_harga = 0;
 
         $transaction = [
-            'username'    => $this->request->getPost('username'),
-            'alamat'      => $this->request->getPost('alamat'),
-            'ongkir'      => $ongkir,
-            'total_harga' => $subtotal + $ongkir,
-            'status'      => 0, 
+            'username'     => $this->request->getPost('username'),
+            'alamat'       => $this->request->getPost('alamat'),
+            'ongkir'       => $ongkir,
+            'total_harga'  => $total_harga,
+            'ppn'          => $ppn,
+            'biaya_admin'  => $biaya_admin,
+            'kupon_code'   => $kupon_code ?: null,
+            'diskon_kupon' => $diskon_kupon,
+            'status'       => 0, 
         ];
 
         // insert transaction
@@ -203,7 +222,6 @@ class TransaksiController extends BaseController
                 'transaction_id' => $transactionId,
                 'product_id'     => $item['id'],
                 'jumlah'         => $item['qty'],
-                'diskon'         => 0,
                 'subtotal_harga' => $item['qty'] * $item['price'] 
             ]);
         }
@@ -214,7 +232,6 @@ class TransaksiController extends BaseController
             return redirect()->back()->with('error', 'Gagal membuat transaksi');
         }
 
-            //hapus session keranjang belanja 
         $this->cart->destroy();
         return redirect()->to(base_url());
     }
